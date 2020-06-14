@@ -6,12 +6,15 @@ import re
 from collections import defaultdict
 from gensim.models import Word2Vec
 
+import pathlib
+
 
 def main(directory=sys.argv[1]):  # directory=sys.argv[1], numOfUsers=sys.argv[2], outputDir=sys.argv[3]
+
     print('*********************************')
     numOfUsers = 1
     numOfUsersToPrint = int(numOfUsers)
-    outputDir = directory
+    outputDir = str(pathlib.Path(__file__).parent.absolute())
 
     if not os.path.exists(outputDir):  # make output dir if not exists
         os.makedirs(outputDir)
@@ -27,16 +30,25 @@ def main(directory=sys.argv[1]):  # directory=sys.argv[1], numOfUsers=sys.argv[2
 
         print('*********************************')
 
-    combineFilesIntoOne(directory)
+    combineFilesIntoOne(outputDir)
 
-    sentencesList = sentencesToListOfLists(directory + "\\" + 'SumOfAll' + '.txt')
+    sentencesList = sentencesToListOfLists(outputDir + "\\" + 'SumOfAll' + '.txt')
 
     if len(sentencesList) == 2214194:
         print('Sentences list created successfully')
 
+    print('\nNow creating the model file...')
+
     gc.collect()
     self_trained_model = Word2Vec(sentencesList, size=300, min_count=10)
-    self_trained_model.wv.save_word2vec_format(directory + '\\' + 'model' + '.vec')
+    self_trained_model.wv.save_word2vec_format(outputDir + '\\' + 'model' + '.vec')
+    print('model.vec was created')
+
+    print('Cleaning up...')
+    for currentFile in os.listdir(outputDir):
+        if currentFile.startswith('AllUsersOf_') or currentFile.startswith('SumOfAll'):
+            os.remove(currentFile)
+
     print('Finished')
 
 
